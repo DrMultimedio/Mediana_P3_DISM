@@ -132,12 +132,13 @@ __global__ void medianFilter1D_row(
 	unsigned char temp;
 	int idx, idx_south, idx_north, idx_west, idx_east, idx_north_west, idx_north_east, idx_south_east, idx_south_west;
 	int numcols = WIDTH + 2;
+	int numrows = HEIGHT + 2;
 
 	// Calculamos la columna global para este hilo a partir de
 	// blockIdx.x, blockDim.x y threadIdx.x.
 	// Recuerda sumar 1 para tener en cuenta el halo introducido.
 	// TODO
-	// col = 
+	col = blockIdx.x * blockDim.x + threadIdx.x + 1;
 
 	// Iteramos todas las filas de la columna actual
 	for (row = 1; row <= HEIGHT; ++row)
@@ -146,18 +147,18 @@ __global__ void medianFilter1D_row(
 		// Calcular índice lineal para acceder a la fila y 
 		// columna correspondiente y sus vecinos
 		// TODO
-		//idx = ;
+		idx = row * numcols + col;
 
 		// Calcular índices vecindad 3x3
 		// TODO 
-		/*idx_south = ;
-		idx_north = ;
-		idx_west = ;
-		idx_east = ;
-		idx_north_east = ;
-		idx_north_west = ;
-		idx_south_east = ;
-		idx_south_west = ;
+		idx_south = (row - 1) * numrows + col;
+		idx_north = (row + 1) * numrows + col;
+		idx_west = row * numrows + (col - 1);
+		idx_east = row * numrows + (col + 1);
+		idx_north_east = (row + 1) * numrows + (col + 1);
+		idx_north_west = (row + 1) * numrows + (col - 1);
+		idx_south_east = (row - 1) * numrows + (col + 1);
+		idx_south_west = (row - 1) * numrows + (col - 1);
       
 		neighborhood[0]= d_input[ idx_south_west ];
 		neighborhood[1]= d_input[ idx_south ];
@@ -167,7 +168,8 @@ __global__ void medianFilter1D_row(
 		neighborhood[5]= d_input[ idx_east ];
 		neighborhood[6]= d_input[ idx_north_west ];
 		neighborhood[7]= d_input[ idx_north ];
-		neighborhood[8]= d_input[ idx_north_east ];*/
+		neighborhood[8]= d_input[ idx_north_east ];
+
 
 		// Ordenar elementos para encontrar la mediana
 		for (unsigned int j=0; j<5; ++j)
@@ -202,8 +204,8 @@ __global__ void medianFilter2D(
 	// blockIdx.y, blockDim.y y threadIdx.y
 	// Recuerda sumar 1 para tener en cuenta el halo introducido  
 	// TODO
-	// col = ;
-	// row = ;
+	col = blockIdx.x * blockDim.x + threadIdx.x + 1;
+	row = blockIdx.y * blockDim.y + threadIdx.y + 1;
 
     // Calcular índice lineal para acceder a la fila y 
 	// columna correspondiente y sus vecinos.
@@ -302,31 +304,36 @@ int main(int argc, char *argv[])
 	for (i = 0; i < ITERATIONS; ++i) 
 	{
 		// Ejecución kernel 1D por filas
+		/* 
 		dim3 blocksPerGrid(GRID_H, 1, 1);
 		dim3 threadsPerBlock(BLOCK_H, 1, 1);
 		//std::cout << "Grid size: (" << blocksPerGrid.x << ", " << blocksPerGrid.y << ", " << blocksPerGrid.z << ")\n";
 		//std::cout << "Block size: (" << threadsPerBlock.x << ", " << threadsPerBlock.y << ", " << threadsPerBlock.z << ")\n";
-		medianFilter1D_col<<<blocksPerGrid, threadsPerBlock>>>(d_output, d_input);
-
+		//medianFilter1D_col<<<blocksPerGrid, threadsPerBlock>>>(d_output, d_input);
+		*/
 		// Ejecución kernel 1D por columnas
 		//TODO - Calcular tamaño de bloque y grid para la correcta ejecucion del kernel
-		/*dim3 blocksPerGrid();
+		
+		dim3 blocksPerGrid();
 		dim3 threadsPerBlock();
-		medianFilter1D_row<<<blocksPerGrid, threadsPerBlock>>>(d_output, d_input);*/
-
+		medianFilter1D_row<<<blocksPerGrid, threadsPerBlock>>>(d_output, d_input);
+		
 		// Ejecución kernel 2D
 		// TO DO - Calcular tamaño de bloque y grid para la correcta ejecucion del kernel
-		/*dim3 blocksPerGrid(,);
-		dim3 threadsPerBlock(,);
-		medianFilter2D<<< blocksPerGrid, threadsPerBlock >>>(d_output, d_input);*/
-
+		/*
+		dim3 blocksPerGrid(GRID_H * GRID_W + 2, 1, 1);
+		dim3 threadsPerBlock(BLOCK_H * BLOCK_W, 1, 1);
+		medianFilter2D<<< blocksPerGrid, threadsPerBlock >>>(d_output, d_input);
+		*/
 		cudaThreadSynchronize();
 
 		// Copiamos en la memoria de la CPU el resultado obtenido
-		cudaMemcpy(gpu_output, d_output, kMemSize, cudaMemcpyDeviceToHost);
+		//cudaMemcpy(gpu_output, d_output, kMemSize, cudaMemcpyDeviceToHost);
 		// Copiamos el resultado de la GPU hacia la entrada para procesar la siguiente iteración */
-		cudaMemcpy( d_input, gpu_output, kMemSize, cudaMemcpyHostToDevice);
-
+		//cudaMemcpy( d_input, gpu_output, kMemSize, cudaMemcpyHostToDevice);
+		tmp = d_input;
+		d_input = d_output;
+		d_output = tmp;
 		// TODO: Estas copias de memoria se pueden evitar, para ello comenta las
 		// transferencias anteriores e intercambia los punteros d_input y d_output
 		// para que la salida de esta iteración se convierta en la entrada de la
