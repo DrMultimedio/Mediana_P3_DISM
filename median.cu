@@ -6,6 +6,23 @@
 /// Código preparado por: Albert García <agarcia@dtic.ua.es>
 /// Basado en el código creado por Sergio Orts Escolano
 /// ---------------------------------------------------------------------------
+
+//declarar memoria SM 
+// ___shared___ unsigned char d_input_sm[(BLOCK_W+2) * (BLOCK_H+2)]
+//Declarar correspoendencia de global a compartida
+//TENEMOS QUE LANZAR BLOQUES DE TAMAÑO BLOCK_W+2 Y BLOCK_H + 2
+//col = threadidx.x + blockidx.x * blockdim.y
+//row * numcds + cal
+//correspondencia de memoria compartida
+//col_sm = threadIDX.x;
+//row_sm = threadIDX.y;
+//d_input_sm[row_sm*numcols_sm+col_sm]
+//d_input = row* numcols+col
+//sincronizaMOS 
+//_syncthread()
+//computo utilizando memoria compartida
+//solo los hilos correspondientes a imagen
+//if ( row_sm > ??? && row_sm <= ???? && col_sm > ??? && col_sm <= ???) 
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -331,13 +348,18 @@ int main(int argc, char *argv[])
 		//cudaMemcpy(gpu_output, d_output, kMemSize, cudaMemcpyDeviceToHost);
 		// Copiamos el resultado de la GPU hacia la entrada para procesar la siguiente iteración */
 		//cudaMemcpy( d_input, gpu_output, kMemSize, cudaMemcpyHostToDevice);
+<<<<<<< HEAD
 		tmp = d_input;
 		d_input = d_output;
 		d_output = tmp;
+=======
+
+>>>>>>> origin/master
 		// TODO: Estas copias de memoria se pueden evitar, para ello comenta las
 		// transferencias anteriores e intercambia los punteros d_input y d_output
 		// para que la salida de esta iteración se convierta en la entrada de la
 		// siguiente iteración del filtro mediana.
+
 	}
 
 	// Copiamos el resultado final de la GPU a la CPU
