@@ -65,10 +65,10 @@ void checkCUDAError(const char*);
 #define ITERATIONS 50
 
 // Tamaño de grid y bloque CUDA
-#define GRID_W  64
-#define GRID_H  64
-#define BLOCK_W 16
-#define BLOCK_H 16
+#define GRID_W  32
+#define GRID_H  32
+#define BLOCK_W 32
+#define BLOCK_H 32
 
 // Buffers con el halo correspondiente
 unsigned char host_input[HEIGHT+2][WIDTH+2];
@@ -330,31 +330,27 @@ int main(int argc, char *argv[])
 		*/
 		// Ejecución kernel 1D por columnas
 		//TODO - Calcular tamaño de bloque y grid para la correcta ejecucion del kernel
-		
-		dim3 blocksPerGrid();
-		dim3 threadsPerBlock();
+		/*
+		dim3 blocksPerGrid(GRID_W, 1, 1);
+		dim3 threadsPerBlock(BLOCK_W, 1, 1);
 		medianFilter1D_row<<<blocksPerGrid, threadsPerBlock>>>(d_output, d_input);
-		
+		*/
 		// Ejecución kernel 2D
 		// TO DO - Calcular tamaño de bloque y grid para la correcta ejecucion del kernel
-		/*
-		dim3 blocksPerGrid(GRID_H * GRID_W + 2, 1, 1);
-		dim3 threadsPerBlock(BLOCK_H * BLOCK_W, 1, 1);
+		
+		dim3 blocksPerGrid(GRID_W, GRID_H, 1);
+		dim3 threadsPerBlock(BLOCK_W, BLOCK_H, 1);
 		medianFilter2D<<< blocksPerGrid, threadsPerBlock >>>(d_output, d_input);
-		*/
+		
 		cudaThreadSynchronize();
 
 		// Copiamos en la memoria de la CPU el resultado obtenido
 		//cudaMemcpy(gpu_output, d_output, kMemSize, cudaMemcpyDeviceToHost);
 		// Copiamos el resultado de la GPU hacia la entrada para procesar la siguiente iteración */
 		//cudaMemcpy( d_input, gpu_output, kMemSize, cudaMemcpyHostToDevice);
-<<<<<<< HEAD
 		tmp = d_input;
 		d_input = d_output;
 		d_output = tmp;
-=======
-
->>>>>>> origin/master
 		// TODO: Estas copias de memoria se pueden evitar, para ello comenta las
 		// transferencias anteriores e intercambia los punteros d_input y d_output
 		// para que la salida de esta iteración se convierta en la entrada de la
